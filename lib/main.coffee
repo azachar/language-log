@@ -4,6 +4,11 @@ LogView = null
 
 module.exports = LanguageLog =
   config:
+    stackTraceDomain:
+      title: 'Stacktrace filtering package domain'
+      description: 'A text to filter out only your packages in the stacktrace'
+      type: 'string'
+      default: 'build'
     showFilterBar:
       type: 'boolean'
       default: true
@@ -40,7 +45,7 @@ module.exports = LanguageLog =
 
     @disposables.add atom.workspace.observeActivePaneItem (item) =>
       @itemUpdate(item)
-      
+
     atom.commands.add 'atom-workspace', 'log:toggle-log-panel', => @toggleLogPanel()
 
   deactivate: ->
@@ -54,7 +59,7 @@ module.exports = LanguageLog =
 
     @grammarDisposable.add item.observeGrammar? (grammar) =>
       @removeLogPanel()
-      if grammar.name is 'Ansi Styles' && atom.config.get 'language-log.showFilterBar'
+      if (grammar.name is 'Ansi Styles') && atom.config.get 'language-log.showFilterBar'
         @addLogPanel(item)
 
   addLogPanel: (textEditor) ->

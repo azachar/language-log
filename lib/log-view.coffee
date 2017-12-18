@@ -42,8 +42,8 @@ class LogView extends View
             @button outlet: 'caseSensistiveButton', class: 'btn', 'Aa'
           @div class: 'btn-group btn-group-level', =>
             @button outlet: 'levelVerboseButton', class: 'btn syntax--log-verbose', 'V'
-            @button outlet: 'levelInfoButton', class: 'btn syntax--log-info', 'I'
             @button outlet: 'levelDebugButton', class: 'btn syntax--log-debug', 'D'
+            @button outlet: 'levelInfoButton', class: 'btn syntax--log-info', 'I'
             @button outlet: 'levelWarningButton', class: 'btn syntax--log-warning', 'W'
             @button outlet: 'levelErrorButton', class: 'btn syntax--log-error', 'E'
 
@@ -57,11 +57,11 @@ class LogView extends View
     @logFilter = new LogFilter(@textEditor)
     @tailing = false
     @settings =
-      verbose: true
-      info: true
-      debug: true
-      warning: true
-      error: true
+      verbose: false
+      debug: false
+      info: false
+      warning: false
+      error: false
 
     @handleEvents()
     @handleConfigChanges()
@@ -134,7 +134,7 @@ class LogView extends View
   toggleButton: (level) ->
     @settings[level] = if @settings[level] then false else true
     @updateButtons()
-    @logFilter.performLevelFilter(@getFilterScopes())
+    @logFilter.performTextFilter(@filterBuffer.getText(), @getFilterScopes())
 
   updateButtons: ->
     @tailButton.toggleClass('selected', atom.config.get('language-log.tail'))

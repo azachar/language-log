@@ -35,41 +35,49 @@ class LogFilter
   getFilteredCount: ->
     @results.text.length + @results.levels.length
 
-  performTextFilter: (text) ->
-    return unless regex = @getRegexFromText(text)
+  performTextFilter: (text, scopes) ->
+    return unless regexStage = @getRegexFromText('Log from branch')
+    return unless regexFailures = @getRegexFromText('Failures\:')
+    # return unless regexError = @getRegexFromText('\[[3][1]') #any red ansi color
+    return unless regexError = @getRegexFromText('Error')
+    return unless regexERROR = @getRegexFromText('ERROR:')
+    return unless regexFailed = @getRegexFromText('Failed')
+    return unless regexAt = @getRegexFromText('    at ')
+    return unless regexNodeModules = @getRegexFromText('node_modules')
+    return unless regexDomain = @getRegexFromText(atom.config.get 'language-log.stackTraceDomain')
     return unless buffer = @textEditor.getBuffer()
 
-    return unless regex
+    if scopes?.length>0
+      @results.text = for line, i in buffer.getLines()
+        if  ('definition.log.log-verbose' not in scopes and (\
+                regexStage.test(line) \
+              ) \
+            ) \
+            or ('definition.log.log-debug' not in scopes and (\
+                regexAt.test(line) \
+                and regexDomain.test(line) \
+                and not regexNodeModules.test(line) \
+              ) \
+            ) \
+            or ('definition.log.log-info' not in scopes and (\
+                regexFailed.test(line) \
+              ) \
+            ) \
+            or ('definition.log.log-warning' not in scopes and (\
+                regexFailures.test(line) or regexError.test(line) \
+              ) \
+            ) \
+            or ('definition.log.log-error' not in scopes and (\
+                regexERROR.test(line) \
+              ) \
+            ) \
+            then else i
 
-    if atom.config.get('language-log.useMultiLinesLogEntrySupport')
-      # We build a list of log entries, instead of lines,
-      # to be able to parse an entry at once and as a whole
-      logEntriesArray = []
-      # To stick to the original way the folding is done,
-      # because now we are working with several lines at a time,
-      # we need to fill for each recognized log entry a list of lines instead of a single one.
-      linesIndexes = []
-      @performLinesWithTimestampFilter()
-      for line, i in @results.linesWithTimestamp
-        start = line
-        end = line
-        if i + 1 < @results.linesWithTimestamp.length
-          start = line
-          end = @results.linesWithTimestamp[i+1]-1
-        logEntriesArray.push(buffer.getTextInRange([[start, 0], [end, @textEditor.getBuffer().lineLengthForRow(end)]]))
-        indexesForLines = []
-        for lineNumber in [start..end]
-          indexesForLines.push(lineNumber)
-        linesIndexes.push(indexesForLines)
-      lineToDisplayIndexes = []
-      for logLine, i in logEntriesArray
-        if regex.test(logLine) then else lineToDisplayIndexes = lineToDisplayIndexes.concat(linesIndexes[i])
-      @results.text = lineToDisplayIndexes
     else
       @results.text = for line, i in buffer.getLines()
-        if regex.test(line) then else i
+          if regexStage.test(line) or regexFailures.test(line)  or regexERROR.test(line) or regexError.test(line) or regexFailed.test(line) or (regexAt.test(line) and not regexNodeModules.test(line) and regexDomain.test(line)) then else i
 
-    @results.text = @addAdjacentLines(@results.text)
+    # @results.text = @addAdjacentLines(@results.text)
     @filterLines()
 
   addAdjacentLines: (textResults) ->
@@ -167,13 +175,13 @@ class LogFilter
         return true if filterScopes.indexOf(scope) isnt -1
     return false
 
-  getRegexFromText: (text) ->
+  getRegexFromText: (text, ignoreCase) ->
     try
       regexpPattern = text
       regexpFlags = ''
       if text[0] is '!'
         regexpPattern = "^((?!#{text.substr(1)}).)*$"
-      if atom.config.get('language-log.caseInsensitive')
+      if atom.config.get('language-log.caseInsensitive') or ignoreCase
         regexpFlags += 'i'
 
       if regexpFlags
