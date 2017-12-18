@@ -54,7 +54,7 @@ module.exports = LanguageLog =
 
     @grammarDisposable.add item.observeGrammar? (grammar) =>
       @removeLogPanel()
-      if grammar.name is 'Log' && atom.config.get 'language-log.showFilterBar'
+      if grammar.name is 'Ansi Styles' && atom.config.get 'language-log.showFilterBar'
         @addLogPanel(item)
 
   addLogPanel: (textEditor) ->
