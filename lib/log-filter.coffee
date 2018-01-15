@@ -35,6 +35,15 @@ class LogFilter
   getFilteredCount: ->
     @results.text.length + @results.levels.length
 
+  clear: ->
+    @removeFilter()
+    @results =
+      text: []
+      levels: []
+      times: []
+      linesWithTimestamp: []
+    @emitter.emit 'did-finish-filter'
+
   performTextFilter: (text, scopes) ->
     return unless regexStage = @getRegexFromText('Log from branch')
     return unless regexFailures = @getRegexFromText('Failures\:')

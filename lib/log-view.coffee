@@ -31,6 +31,7 @@ class LogView extends View
 
       @section class: 'input-block', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
+          @button outlet: 'clearButton', class: 'btn', 'Clear'
           @subview 'filterEditorView', new TextEditorView(editor: filterEditor)
 
         @div class: 'input-block-item', =>
@@ -68,6 +69,8 @@ class LogView extends View
     @updateButtons()
     @updateDescription()
 
+    @disposables.add atom.tooltips.add @clearButton,
+      title: "Clear filters and shows all"
     @disposables.add atom.tooltips.add @filterButton,
       title: "Filter Log Lines"
     @disposables.add atom.tooltips.add @tailButton,
@@ -95,6 +98,7 @@ class LogView extends View
     @disposables.add @logFilter.onDidFinishFilter =>
       @updateDescription()
 
+    @clearButton.on 'click', => @clear()
     @filterButton.on 'click', => @confirm()
     @tailButton.on 'click', => @toggleTail()
     @caseSensistiveButton.on 'click', => @toggleCaseSensitivity()
@@ -144,6 +148,17 @@ class LogView extends View
     @levelDebugButton.toggleClass('selected', @settings.debug)
     @levelWarningButton.toggleClass('selected', @settings.warning)
     @levelErrorButton.toggleClass('selected', @settings.error)
+
+  clear: ->
+    @tailing = false
+    @settings =
+      verbose: false
+      debug: false
+      info: false
+      warning: false
+      error: false
+    @updateButtons()
+    @logFilter.clear()
 
   confirm: ->
     @logFilter.performTextFilter(@filterBuffer.getText(), @getFilterScopes())
