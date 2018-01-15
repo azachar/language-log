@@ -45,38 +45,44 @@ class LogFilter
     return unless regexAt = @getRegexFromText('    at ')
     return unless regexNodeModules = @getRegexFromText('node_modules')
     return unless regexDomain = @getRegexFromText(atom.config.get 'language-log.stackTraceDomain')
+    return unless regexText = @getRegexFromText(text)
     return unless buffer = @textEditor.getBuffer()
 
-    if scopes?.length>0
-      @results.text = for line, i in buffer.getLines()
-        if  ('definition.log.log-verbose' not in scopes and (\
+    verbose = 'definition.log.log-verbose' in scopes
+    debug = 'definition.log.log-debug' in scopes
+    info = 'definition.log.log-info' in scopes
+    warning = 'definition.log.log-warning' in scopes
+    error = 'definition.log.log-warning' in scopes
+    error = 'definition.log.log-warning' in scopes
+    userText = text.length > 0
+
+    @results.text = for line, i in buffer.getLines()
+        if  (userText and (\
+                regexText.test(line) \
+              ) \
+            ) \
+            or (verbose and (\
                 regexStage.test(line) \
               ) \
             ) \
-            or ('definition.log.log-debug' not in scopes and (\
+            or (debug and (\
                 regexAt.test(line) \
                 and regexDomain.test(line) \
                 and not regexNodeModules.test(line) \
               ) \
             ) \
-            or ('definition.log.log-info' not in scopes and (\
+            or (info and (\
                 regexFailed.test(line) \
               ) \
             ) \
-            or ('definition.log.log-warning' not in scopes and (\
+            or (warning and (\
                 regexFailures.test(line) or regexError.test(line) \
               ) \
             ) \
-            or ('definition.log.log-error' not in scopes and (\
+            or (error and (\
                 regexERROR.test(line) \
               ) \
-            ) \
-            then else i
-
-    else
-      @results.text = for line, i in buffer.getLines()
-          if regexStage.test(line) or regexFailures.test(line)  or regexERROR.test(line) or regexError.test(line) or regexFailed.test(line) or (regexAt.test(line) and not regexNodeModules.test(line) and regexDomain.test(line)) then else i
-
+            ) then else i
     # @results.text = @addAdjacentLines(@results.text)
     @filterLines()
 

@@ -134,7 +134,7 @@ class LogView extends View
   toggleButton: (level) ->
     @settings[level] = if @settings[level] then false else true
     @updateButtons()
-    @logFilter.performTextFilter(@filterBuffer.getText(), @getFilterScopes())
+    @confirm()
 
   updateButtons: ->
     @tailButton.toggleClass('selected', atom.config.get('language-log.tail'))
@@ -146,22 +146,22 @@ class LogView extends View
     @levelErrorButton.toggleClass('selected', @settings.error)
 
   confirm: ->
-    @logFilter.performTextFilter(@filterBuffer.getText())
+    @logFilter.performTextFilter(@filterBuffer.getText(), @getFilterScopes())
 
   liveFilter: ->
     @logFilter.performTextFilter('') if @filterBuffer.getText().length is 0
 
   getFilterScopes: ->
     scopes = []
-    unless @settings.verbose
+    if @settings.verbose
       scopes.push 'definition.log.log-verbose'
-    unless @settings.info
+    if @settings.info
       scopes.push 'definition.log.log-info'
-    unless @settings.debug
+    if @settings.debug
       scopes.push 'definition.log.log-debug'
-    unless @settings.warning
+    if @settings.warning
       scopes.push 'definition.log.log-warning'
-    unless @settings.error
+    if @settings.error
       scopes.push 'definition.log.log-error'
     return scopes
 
