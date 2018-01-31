@@ -45,7 +45,7 @@ class LogFilter
     @emitter.emit 'did-finish-filter'
 
   performTextFilter: (text, scopes) ->
-    return unless regexStage = @getRegexFromText('Log from branch')
+    return unless regexStage = @getRegexFromText('== LOG ==')
     return unless regexFailures = @getRegexFromText('Failures\:')
     # return unless regexError = @getRegexFromText('\[[3][1]') #any red ansi color
     return unless regexError = @getRegexFromText('Error')
